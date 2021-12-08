@@ -3,7 +3,7 @@ import platform
 
 from pathlib import Path
 
-class replay_dir_manager(object):
+class ReplayDirManager(object):
     def __init__(self):
         self.path_valid = False
         self.replay_path = None
