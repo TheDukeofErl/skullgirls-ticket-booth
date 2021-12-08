@@ -10,7 +10,7 @@ from ui_py.main_window import Ui_MainWindow
 from ui_py.about import Ui_About
 from ui_py.replay_path_detection import Ui_ReplayPathDetection
 
-from utilities import replay_dir_manager
+from utilities import ReplayDirManager
 
 class Window(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
@@ -63,7 +63,7 @@ win = Window()
 win.show()
 
 # get the path automatically (or try to)
-dir_manager = replay_dir_manager()
+dir_manager = ReplayDirManager()
 dir_manager.path_detection()
 # set status bar to current path
 win.statusbar.showMessage(dir_manager.replay_path_str)
