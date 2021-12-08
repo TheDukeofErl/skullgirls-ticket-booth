@@ -1,8 +1,6 @@
 # basic just testing if this works
 
 import sys
-import os
-from pathlib import Path
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -11,6 +9,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QFi
 from ui_py.main_window import Ui_MainWindow
 from ui_py.about import Ui_About
 from ui_py.replay_path_detection import Ui_ReplayPathDetection
+
+from utilities import replay_dir_manager
 
 class Window(QMainWindow, Ui_MainWindow):
 	def __init__(self, parent=None):
@@ -28,7 +28,8 @@ class Window(QMainWindow, Ui_MainWindow):
 
 	def open(self):
 		new_path = QFileDialog.getExistingDirectory()
-		print (new_path)
+		if dir_manager.set_path(new_path):
+			self.reloadMenu(dir_manager.list_replays())
 
 	def about(self):
 		about = About(self)
@@ -37,12 +38,14 @@ class Window(QMainWindow, Ui_MainWindow):
 	def replay_selected(self):
 		index = self.listview_replays.selectionModel().currentIndex()
 		selection = str(index.data())
-		self.statusbar.showMessage(replay_folder_path_str + "/" + selection + ".ini")
+		self.statusbar.showMessage(dir_manager.replay_path_str + "/" + selection)
 
 	def reloadMenu(self, replays):
-		for i in replays:
-			item = QStandardItem(i)
-			self.listview_replays_model.appendRow(item)
+		self.listview_replays_model.clear()
+		if replays != None:
+			for i in replays:
+				item = QStandardItem(i)
+				self.listview_replays_model.appendRow(item)
 
 class ReplayPathDetection(QDialog, Ui_ReplayPathDetection):
 	def __init__(self, parent=None):
@@ -59,27 +62,18 @@ app = QApplication(sys.argv)
 win = Window()
 win.show()
 
-# Attempt to detect the file path...
-# There may or may not be more than one Steam UID here, if there's more than one then just don't?
-# TODO: platform agnostic
-replay_folder_path = Path.home().joinpath('.local','share','Skullgirls','Replays')
-dir_list = os.listdir(replay_folder_path)
-if len(dir_list) == 1:
-	replay_folder_path = replay_folder_path.joinpath(dir_list[0])
-
-replay_folder_path_str = str(replay_folder_path)
-win.statusbar.showMessage(replay_folder_path_str)
+# get the path automatically (or try to)
+dir_manager = replay_dir_manager()
+dir_manager.path_detection()
+# set status bar to current path
+win.statusbar.showMessage(dir_manager.replay_path_str)
 
 # Show the path popup
 path_detection = ReplayPathDetection(win)
-path_detection.replay_path.setText(replay_folder_path_str)
+path_detection.replay_path.setText(dir_manager.replay_path_str)
 path_detection.exec()
 
-replays = os.listdir(replay_folder_path)
-replays = [os.path.splitext(each)[0] for each in replays]
-replays = list(dict.fromkeys(replays))
-
-win.reloadMenu(replays)
+win.reloadMenu(dir_manager.list_replays())
 
 # Exit?
 sys.exit(app.exec())
