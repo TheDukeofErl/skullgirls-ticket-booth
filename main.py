@@ -27,9 +27,13 @@ class Window(QMainWindow, Ui_MainWindow):
         self.listview_replays.selectionModel().currentChanged.connect(self.replay_selected)
 
     def open(self):
-        new_path = QFileDialog.getExistingDirectory()
-        if dir_manager.set_path(new_path):
-            self.reloadMenu(dir_manager.list_replays())
+        if dir_manager.path_valid:
+            new_path = QFileDialog.getExistingDirectory(self, "Open Directory", dir_manager.replay_path_str)
+        else:
+            new_path = QFileDialog.getExistingDirectory(self, "Open Directory")
+        if new_path != "":
+            if dir_manager.set_path(new_path):
+                self.reloadMenu(dir_manager.list_replays())
 
     def about(self):
         about = About(self)
