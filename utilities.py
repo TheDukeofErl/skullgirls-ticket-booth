@@ -26,7 +26,7 @@ class ReplayDirManager(object):
         else:
             self.path_valid = False
             self.replay_path = None
-            self.replay_path_str = "NO_PATH"
+            self.replay_path_str = "TOO_MANY_DIRS"
 
         return self.path_valid
 
