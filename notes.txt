@@ -1,0 +1,50 @@
+Platforms
+	support
+		Linux (I use it)
+		Windows (majority of people use it)
+			hopefully Qt looks nice on there
+	unsupported
+		OS X
+			I don't have a good way to test
+			setting up OS X VMs is a painful process
+			I doubt very many people playing skullgirls use OS X
+			maybe someone will want to make that supported at some point and fork/PR that? :D
+
+Parsing the .ini files: the formatting on these is a little weird, they delimit on space and repeat keys
+	trying to use configparser
+		lack of a [section] causes issues, see https://stackoverflow.com/questions/2885190/using-configparser-to-read-a-file-without-section-name
+		still can't parse correctly due to repeated keys: configparser.DuplicateOptionError: While reading from '<???>' [line 10]: option 'fighter' in section 'top' already exists
+	it'll be simpler to just make something instead of relying on config parser
+
+it's probably going to be worth setting up my own .conf file for this:
+	format
+		can use configparser for this (even though it didn't work before)
+		json might be nicer, though the file probably won't be comlex enough to justify it's use
+	avoid having to scan for a dir each time by saving off the path
+	set previous screen location
+	set previous window size
+	best location for this?
+		platform specific?
+			Linux: ~/.config (XDG_CONFIG_HOME)
+			Windows: appdata
+		platform agnostic (ish)?
+			Linux: ~/.local/share/Skullgirls ($XDG_DATA_HOME/Skullgirls)
+			Windows: %USERPROFILE%\Documents\Skullgirls\
+		I'm leaning towards the second one but am not sure
+		could also just have it write the file in the same directory it's run in: do I want this to be installed?
+			I'll probably add it to the AUR so I guess so... is that worth it though?
+			could support portable and installed configurations (probably more than I want to do)
+			I don't really want to have to make an updater so portable might be easier anyways
+				check for updates is probably necessary though :/
+
+SG Directory locations:
+	Linux: $XDG_DATA_HOME/Skullgirls
+	Windows: %USERPROFILE%\Documents\Skullgirls
+	Inside of these
+		save games
+			Linux: /SaveData
+			Windows: \Save Data
+		replays
+			Linux: /Replays
+			Windows: \Replays_SG2EPlus
+	PCGamingWiki notes that it's not sure if non-standard XDG_DATA_HOMEs are honored: may be worth just treating that directly as ~/.local/share.
