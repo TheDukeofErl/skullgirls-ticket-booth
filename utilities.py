@@ -46,7 +46,7 @@ class ReplayDirManager(object):
     def list_replays(self):
         print("Getting replays from : " + self.replay_path_str)
         if self.path_valid:
-            replays = sorted(os.listdir(self.replay_path))
-            replays = [os.path.splitext(each)[0] for each in replays]
+            replays = sorted(self.replay_path.iterdir())
+            replays = [each.stem for each in replays]
             replays = list(dict.fromkeys(replays))
             return replays
