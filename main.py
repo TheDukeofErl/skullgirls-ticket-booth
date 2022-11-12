@@ -2,26 +2,28 @@
 
 import sys
 
-from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QFileSystemModel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog
 
+import replay_reader
 from ui_py.main_window import Ui_MainWindow
 from ui_py.about import Ui_About
 from ui_py.replay_path_detection import Ui_ReplayPathDetection
-
 from utilities import ReplayDirManager
+from replay_reader import ReplayReader
+
 
 class Window(QMainWindow, Ui_MainWindow):
-    def __init__(self, dir_manager, parent=None):
+    def __init__(self, dir_manager, replay_reader, parent=None):
         super().__init__(parent)
         self.setupUi(self)
         self.dir_manager = dir_manager
+        self.replay_reader = replay_reader
         self.listview_replays_model = QStandardItemModel()
         self.listview_replays.setModel(self.listview_replays_model)
-        self.connectSignalSlots()
+        self.connect_signal_slots()
 
-    def connectSignalSlots(self):
+    def connect_signal_slots(self):
         self.actionOpen.triggered.connect(self.open)
         self.actionExit.triggered.connect(self.close)
         self.actionAbout.triggered.connect(self.about)
@@ -34,7 +36,8 @@ class Window(QMainWindow, Ui_MainWindow):
             new_path = QFileDialog.getExistingDirectory(self, "Open Directory")
         if new_path != "":
             if self.dir_manager.set_path(new_path):
-                self.reloadMenu(self.dir_manager.list_replays())
+                self.replay_reader.set_path_from_string(self.dir_manager.replay_path_str)
+                self.reload_menu(self.dir_manager.list_replays())
 
     def about(self):
         about = About(self)
@@ -44,34 +47,39 @@ class Window(QMainWindow, Ui_MainWindow):
         index = self.listview_replays.selectionModel().currentIndex()
         selection = str(index.data())
         self.statusbar.showMessage(self.dir_manager.replay_path_str + "/" + selection)
+        replay_json = self.replay_reader.read_replay(selection)
+        self.text_replay.setText(replay_reader.format_replay(replay_json))
 
-    def reloadMenu(self, replays):
+    def reload_menu(self, replays):
         self.listview_replays_model.clear()
-        if replays != None:
+        if replays is not None:
             for i in replays:
                 item = QStandardItem(i)
                 self.listview_replays_model.appendRow(item)
+
 
 class ReplayPathDetection(QDialog, Ui_ReplayPathDetection):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
 
+
 class About(QDialog, Ui_About):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
 
+
 def main():
     dir_manager = ReplayDirManager()
+    replay_reader = ReplayReader()
 
     # Setup main window
     app = QApplication(sys.argv)
-    win = Window(dir_manager)
+    win = Window(dir_manager, replay_reader)
     win.show()
 
     # get the path automatically (or try to)
-
     dir_manager.path_detection()
     # set status bar to current path
     win.statusbar.showMessage(dir_manager.replay_path_str)
@@ -81,10 +89,12 @@ def main():
     path_detection.replay_path.setText(dir_manager.replay_path_str)
     path_detection.exec()
 
-    win.reloadMenu(dir_manager.list_replays())
+    win.reload_menu(dir_manager.list_replays())
+    replay_reader.set_path_from_string(dir_manager.replay_path_str)
 
     # Exit?
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()

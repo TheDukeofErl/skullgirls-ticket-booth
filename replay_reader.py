@@ -1,13 +1,28 @@
 from pathlib import Path
 
+
+def format_replay(replay_json):
+    import json
+    return json.dumps(replay_json, indent=4)
+
+
+def print_replay(replay_json):
+    import json
+    print(format_replay(replay_json))
+
+
 class ReplayReader(object):
     def __init__(self, path=None):
         self._replay_path = path
-    
+
+    def set_path_from_string(self, path_str):
+        self.set_path(Path(path_str))
+
     def set_path(self, path):
         self._replay_path = path
 
     def read_replay(self, replay_name):
+        print("processing " + replay_name + ".ini")
         process_fighter = False
         player_one_name = ""
         player_two_name = ""
@@ -62,6 +77,7 @@ class ReplayReader(object):
 
         return replays_dict
 
+
 # testing
 if __name__ == "__main__":
     # hardcoded path for testing
@@ -74,7 +90,7 @@ if __name__ == "__main__":
 
     print("TESTING INDIVIDUAL REPLAY")
     test = replay_reader.read_replay("round_0001")
-    print(json.dumps(test, indent=4))
+    print_replay(test)
     print("TESTING DIRECTORY OF REPLAYS")
     test = replay_reader.process_directory()
-    print(json.dumps(test, indent=4))
+    print_replay(test)
