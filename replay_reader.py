@@ -31,7 +31,7 @@ class ReplayReader(object):
 
         # need to find the player names first... will have to revisit this later to find a better way
         for row in raw_replay.read_text().splitlines():
-            key, value = row.split(' ')
+            key, value = row.split(' ', maxsplit=1)
             if key == "P1Name":
                 player_one_name = value
             elif key == "P2Name":
@@ -46,7 +46,7 @@ class ReplayReader(object):
         current_fighter = ""
         # go through this again...
         for row in raw_replay.read_text().splitlines():
-            key, value = row.split()
+            key, value = row.split(maxsplit=1)
             if key == "World":
                 replay_dict["World"] = value
             elif key == "NumRounds":
